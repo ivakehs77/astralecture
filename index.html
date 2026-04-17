@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Universe Drift</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <canvas id="universe-canvas" aria-label="Interactive universe canvas"></canvas>
+
+    <div class="hud">
+      <div class="left-rail">
+        <section class="hero-card">
+          <p class="eyebrow">Cinematic Universe Explorer</p>
+          <h1>Learn the solar system by flying through it.</h1>
+          <p class="lede">
+            Switch between free exploration and a guided lesson. Click any
+            world to inspect it, or start the narrated tour to move from the
+            Milky Way to the Sun and then outward through all eight planets.
+          </p>
+          <div class="hero-status">
+            <div class="status-pill">
+              <span class="stat-label">Mode</span>
+              <strong id="mode-label">Interactive Explore</strong>
+            </div>
+            <div class="status-pill">
+              <span class="stat-label">Current Focus</span>
+              <strong id="destination-label">Sun</strong>
+            </div>
+          </div>
+          <div class="hero-actions">
+            <button id="tour-btn" type="button">Start planet tour</button>
+            <button id="reset-btn" type="button" class="secondary">Interactive mode</button>
+          </div>
+          <div class="media-controls">
+            <button id="audio-btn" type="button" class="secondary media-btn">Enable sound</button>
+            <button id="narration-btn" type="button" class="secondary media-btn">Enable narration</button>
+          </div>
+          <p class="section-caption media-note" id="media-status">
+            Ambient soundtrack and guided voice are off.
+          </p>
+        </section>
+
+        <section class="control-card">
+          <div class="section-heading">
+            <p class="eyebrow">Planet Visits</p>
+            <span class="section-caption">Sun + all 8 planets</span>
+          </div>
+          <div class="planet-nav">
+            <button id="prev-body-btn" type="button" class="secondary nav-btn">Previous</button>
+            <button id="next-body-btn" type="button" class="secondary nav-btn">Next</button>
+          </div>
+          <div id="destination-grid" class="destination-grid" aria-label="Visit celestial bodies"></div>
+
+          <div class="control-row">
+            <label for="zoom-slider">Scale</label>
+            <input id="zoom-slider" type="range" min="0" max="1000" value="110" />
+          </div>
+          <div class="control-row">
+            <label for="time-slider">Cosmic time</label>
+            <input id="time-slider" type="range" min="0" max="1000" value="420" />
+          </div>
+          <div class="stats-grid">
+            <div>
+              <span class="stat-label">Focus</span>
+              <strong id="focus-label">Solar Neighborhood</strong>
+            </div>
+            <div>
+              <span class="stat-label">Scale</span>
+              <strong id="scale-label">Solar System</strong>
+            </div>
+            <div>
+              <span class="stat-label">Era</span>
+              <strong id="era-label">Present Day</strong>
+            </div>
+            <div>
+              <span class="stat-label">Expansion</span>
+              <strong id="expansion-label">Subtle Drift</strong>
+            </div>
+          </div>
+          <p class="hint">
+            Scroll or use the scale slider to zoom. Drag on the canvas to orbit
+            the view, click planets to study them, and press <kbd>F</kbd> for
+            fullscreen.
+          </p>
+        </section>
+      </div>
+
+    </div>
+
+    <aside class="info-card">
+      <p class="eyebrow" id="object-type">System Overview</p>
+      <h2 id="object-title">Solar Neighborhood</h2>
+      <p id="object-description">
+        Select the Sun or a planet to compare its atmosphere, gravity, size,
+        day length, distance from the Sun, and year length.
+      </p>
+      <div class="fact-grid">
+        <div>
+          <span class="stat-label">Moons</span>
+          <strong id="fact-moons">Varies</strong>
+        </div>
+        <div>
+          <span class="stat-label">Atmosphere</span>
+          <strong id="fact-atmosphere">Mixed</strong>
+        </div>
+        <div>
+          <span class="stat-label">Day Length</span>
+          <strong id="fact-day">Varies</strong>
+        </div>
+        <div>
+          <span class="stat-label">Temperature</span>
+          <strong id="fact-temp">Varies</strong>
+        </div>
+        <div>
+          <span class="stat-label">Diameter</span>
+          <strong id="fact-diameter">Varies</strong>
+        </div>
+        <div>
+          <span class="stat-label">Gravity</span>
+          <strong id="fact-gravity">Varies</strong>
+        </div>
+        <div>
+          <span class="stat-label">Distance from Sun</span>
+          <strong id="fact-distance">Varies</strong>
+        </div>
+        <div>
+          <span class="stat-label">Length of Year</span>
+          <strong id="fact-year">Varies</strong>
+        </div>
+      </div>
+      <div class="compare-card">
+        <span class="stat-label">Compare To Earth</span>
+        <strong id="fact-compare">Use this row to quickly compare each world with Earth.</strong>
+      </div>
+      <p class="fact-note" id="fact-note">
+        Use this panel to compare how each world works and why it is different
+        from the others.
+      </p>
+    </aside>
+
+    <section id="tour-panel" class="tour-panel" aria-live="polite">
+      <p class="eyebrow" id="tour-kicker">Guided Tour</p>
+      <h2 id="tour-title">Welcome to the Milky Way</h2>
+      <div class="tour-progress">
+        <span class="section-caption" id="tour-step-count">Stop 1 of 10</span>
+        <div class="tour-progress-track" aria-hidden="true">
+          <span id="tour-progress-fill"></span>
+        </div>
+      </div>
+      <p id="tour-description" class="tour-description">
+        We begin in our home galaxy, then travel from the Sun through the
+        planets in order to compare what each world is made of and how it
+        behaves.
+      </p>
+      <div class="tour-facts">
+        <div>
+          <span class="stat-label">Now Visiting</span>
+          <strong id="tour-visit">Milky Way</strong>
+        </div>
+        <div>
+          <span class="stat-label">Highlight</span>
+          <strong id="tour-highlight">Our solar system is one tiny part of the Milky Way</strong>
+        </div>
+      </div>
+      <div class="tour-actions">
+        <button id="tour-narration-btn" type="button" class="secondary">Voice on</button>
+        <button id="tour-stop-btn" type="button" class="secondary">Exit Tour</button>
+      </div>
+    </section>
+
+    <script type="module" src="./app.js"></script>
+  </body>
+</html>

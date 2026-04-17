@@ -1,0 +1,76 @@
+Original prompt: can we make a website imitating universe milky way andromeda sun and everything that will expands
+
+- Created initial plan for a zero-dependency cinematic universe explorer MVP.
+- Chose static HTML/CSS/JS to avoid dependency and network friction in an empty workspace.
+- MVP scope: Sun, planets, Milky Way, Andromeda, cosmic web backdrop, zoom interaction, time slider, autoplay tour, deterministic hooks.
+- Implemented index.html, styles.css, and app.js for the cinematic explorer MVP.
+- Added deterministic hooks: window.advanceTime(ms) and window.render_game_to_text().
+- Verification status: JS syntax passes via node --check. Browser automation blocked by environment constraints: Playwright MCP requires /.playwright-mcp on read-only root, and sandboxed processes cannot reach the local server started in a separate escalated session.
+- Added visit controls for the Sun and all 8 planets.
+- Added educational fact panel fields for moon count, atmosphere, day length, and temperature.
+- Added selection-aware camera behavior and enlarged planet showcase rendering when focused on a body.
+- Added previous/next planet navigation and keyboard cycling with ArrowLeft/ArrowRight.
+- Added direct canvas hit-testing so planets and the Sun can be selected from the animated scene.
+- Expanded the fact panel with diameter, gravity, distance from the Sun, and year length.
+- Updated Uranus moon count to 27 and added hover tooltip cues for clickable bodies.
+- Polished desktop layout: shrank and lowered the center control panel, tightened button spacing, and reduced visual weight so the planets remain visible behind the UI.
+- Added tour-focused UI mode: left and right cards fade out during guided tour, while the center controls collapse into a compact strip so visuals stay visible.
+- Reworked the experience into two modes: Interactive Explore and Guided Planet Tour.
+- Guided tour now shows a dedicated narration panel with a Milky Way welcome step, then tours the Sun through Neptune with fact callouts.
+- Regular HUD hides during guided tour so the lesson overlay becomes the only visible UI.
+- Replaced the old 2D canvas renderer with a real Three.js-based 3D solar system scene.
+- Planets are now actual 3D meshes with lighting, procedural surface textures, atmospheric glow, rings for Saturn, and click-based raycasting.
+- Current deployment strategy uses Three.js from a CDN for simplicity; a later pass can bundle dependencies locally for fully self-contained deploys.
+- Polished desktop UI again: reduced hero, control, and info card sizes, tightened typography and spacing, and shrank the bottom-center control dock to reveal more of the 3D scene.
+- Adjusted close-up camera framing so selected planets are offset away from the bottom-center control dock instead of being centered behind it.
+- Moved the guided-tour narration panel from top-center to left-center on desktop so it no longer sits over the middle of the scene during tours.
+- Premium polish pass: moved the control dock into the left column near the hero panel, brightened panel gradients and accents, and reduced the scene obstruction on desktop.
+- Increased solar-system spacing by pushing orbit radii farther apart and widened the default camera distance for a more cinematic composition.
+- Fixed desktop panel layout structurally: hero and planet controls now share a dedicated left rail, which prevents the controls from covering the tour button, and the info card is pinned back to the top-right.
+- Desktop layout updated again: Planet Visits now sits beside the hero panel in the left section, while the facts card stays pinned at the top-right; mobile still falls back to stacked panels.
+- Added a visible Sagittarius A* marker and label in the galaxy backdrop, and updated Sun facts/tour copy to reference the Sun orbiting the Milky Way around Sagittarius A*.
+- Added stylized galactic orbit motion: the entire solar system now orbits around the Sagittarius A* marker in the Milky Way backdrop.
+- Updated the Milky Way guided-tour step to explain the visible Sagittarius A* orbit.
+- Switched the project onto Vite with a local three dependency and local texture assets for the Phase 1 realism pass.
+- Phase 1 realism now uses real texture maps for Earth, Mars, Jupiter, and Saturn, plus Earth support maps, Saturn rings, ACES tone mapping, and bloom.
+- Verified with npm run build; current bundle is functional but the main JS chunk is still large and should be optimized in a later pass.
+- Completed Phase 2 texture pass: Mercury, Venus, Uranus, and Neptune now use local texture assets, and the Sun now has stronger emissive shells for a more game-like glow.
+- Re-verified with npm run build after the expanded texture pipeline; the app is deployable, but the main JS bundle is still oversized and should be split later.
+- Added a Phase 3 cinematic render pass: layered starfields with parallax/twinkle, stronger lighting, fresnel-based atmospheric rims, slight orbital inclination, and a larger solar corona for a higher-end scene read.
+- Re-verified with node --check and npm run build after the cinematic polish pass; app remains deployable, though the main JS bundle is still above the chunk warning threshold.
+- Live visual browser verification is still blocked in this environment because Playwright MCP tries to create `/.playwright-mcp`, which is not writable here; local dev server is available again at http://127.0.0.1:4174/.
+- Added a presentation pass for planet visits: per-planet cinematic camera angles/distances now replace the old one-size-fits-all close-up framing.
+- Added visible moon systems for Earth, Mars, Jupiter, Saturn, Uranus, and Neptune using local procedural moon textures and animated moon orbits.
+- Re-verified with node --check and npm run build after the moon/camera pass; app remains deployable and the main JS bundle grew slightly but is still only a warning, not a build failure.
+- Added a cinematic post-processing grade pass using ShaderPass: subtle contrast/saturation lift, warm bias, vignette, highlight boost, and fine grain for a more polished frame.
+- Improved material response using the existing local texture set: Mercury, Venus, and Mars now use bump detail from their maps, and the gas/ice giants have adjusted roughness for a cleaner lit read.
+- Added layered solar lens-glow sprites around the Sun so hero shots read more like a premium space sim; re-verified with node --check and npm run build.
+- Added generated support-map workflow from the existing texture set: Mercury, Venus, Mars, Jupiter, Saturn, Uranus, and Neptune now derive local normal/roughness/specular-style detail maps at runtime for a richer material response without needing new external assets.
+- Added showcase/demo polish: UI controls for ambient sound and narration, a procedural Web Audio soundtrack that reacts to zoom/time, and speech-synthesis narration for tour steps and focused planet visits.
+- Added deployment cleanup in vite.config.js with manual chunk splitting; latest build now separates `three`, postprocessing, and app code into smaller chunks and removes the previous >500 kB single-app-bundle warning.
+- Fixed guided-tour narration pacing: tour steps no longer advance purely on the old fixed timer when narration is enabled, and now wait for the current speech utterance to finish before moving to the next body.
+- Slowed narration delivery for clarity and rebalanced the render: planets now read brighter with a lighter grade/vignette and stronger fill lighting, while the Sun glow stack was reduced to avoid overexposure.
+- Removed the visible Sagittarius A* marker/label from the galaxy backdrop and simplified the related tour/fact copy so the background reads cleaner.
+- Removed the Sun's sprite-based halo/glow overlays and replaced them with spherical glow shells only, which fixes the boxy/square-looking star flare artifact.
+- Brightened planetary presentation again with lighter midtone grading, stronger ambient/fill lighting, slightly higher exposure, and gentler Sun lighting so planets read clearer without re-overexposing the Sun.
+- Removed visible orbit rings for both planets and moons so the scene reads more like a cinematic space experience instead of a labeled diagram.
+- Increased orbital spacing substantially from the inner planets through Neptune to give the system more breathing room and a more believable large-scale composition.
+- Reworked the starfield points to use soft circular additive sprites instead of square default point fragments, which fixes the boxed floating particle look in the background.
+- Corrected the large-body scale hierarchy: the Sun is now more dominant, Jupiter remains clearly larger than Saturn, and Saturn/outer-planet radii were adjusted so the biggest bodies no longer read as nearly the same size.
+- Rebuilt the procedural Sun surface texture with layered ribbons, darker convection cells, and filament-like streaking so it reads less like a flat orange sphere and more like an active star.
+- Increased solar-system spacing again, especially across the inner planets through Neptune, so the Sun is less cramped by nearby planets and the whole system has more breathing room.
+- Refined the Sun texture pass further toward broader convection patterns and cleaner band flow, reducing the noisy painted look and making the star read more naturally from a distance.
+- Replaced the Sun's texture-driven material with a custom animated shader that generates moving plasma bands, convection-like breakup, filament detail, and a subtler limb response.
+- Upgraded Saturn's rings from a flat cutout material to a custom translucent ring shader with radial falloff, subtle banding, and light response.
+- Reworked Earth's cloud shell into a shader-driven layer with animated cloud drift and a more restrained atmospheric edge treatment for a less decorative, more physical look.
+- Added a subtle opening cinematic intro camera sweep on initial load; it automatically cancels as soon as the user interacts so the site still feels interactive first.
+- Upgraded the Sun shader again with richer plasma flow, layered convection breakup, and a tighter bright-core balance so the star reads more dimensional without reintroducing fake halo rings.
+- Replaced the old flat galaxy backdrop plane with multiple drifting additive nebula layers in warm/cool color palettes, making the background feel more cinematic and space-like.
+- Re-verified with node --check and npm run build after the Sun/nebula pass; app remains deployable. Live visual Playwright verification is still blocked in this environment by the existing Playwright MCP filesystem limitation.
+- Made the Sun's axial spin readable again by increasing its rotation speed and adding a realistic solar tilt; the previous shader motion made the sphere rotation too subtle to notice.
+- UI redesign pass: added clearer hero status chips, tour progress UI, lighter/tighter panel sizing, and more deliberate tour-panel placement so the interface feels more like a product and less like stacked overlays.
+- Cinematic transition pass: added transition boosting for planet visits and guided-tour stops so camera moves accelerate and settle more gracefully instead of feeling flat.
+- Visual realism pass: increased the Sun's apparent dominance, darkened the scene/background, brightened the white star dots, added axial tilts for the planets, and expanded Jupiter to a denser showcase moon set rather than trying to render all known moons at once.
+- Replaced the handcrafted moon lists with generated moon systems that match the displayed moon counts for Earth, Mars, Jupiter, Saturn, Uranus, and Neptune. The moons are distributed in layered orbital bands so high-count planets still read clearly.
+- Improved rotational physics behavior: replaced the generic planet spin speeds with per-body axial rotation rates, including retrograde rotation for Venus and Uranus, and removed the old non-physical moon bobbing so moon systems read more like orbital motion.
+- Final orbital realism pass: replaced the old nearly uniform orbit stepping with a stronger per-planet orbital scaling model tied to the time slider, so inner planets now visibly outrun the outer planets and moon orbits accelerate more coherently with time changes.
