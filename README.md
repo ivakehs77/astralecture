@@ -4,6 +4,10 @@ Astralecture is an interactive 3D educational web experience for exploring the S
 
 The project combines cinematic camera movement, real-time planet rendering, guided tour storytelling, and science facts into a single showcase website built for both learning and presentation.
 
+## Live Demo
+
+[astralecture-2q5c.vercel.app](https://astralecture-2q5c.vercel.app)
+
 ## Features
 
 - Interactive 3D exploration of the Sun and all 8 planets
@@ -89,4 +93,3 @@ Astralecture was built as a standout AI/web showcase project that demonstrates:
 - 3D graphics in the browser
 - educational product design
 - animation and cinematic presentation
-
