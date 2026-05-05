@@ -1,6 +1,6 @@
-// Mobile detection and early exit - MUST BE FIRST
-const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth < 1024;
-
+// Mobile detection - block phones only, allow tablets/iPads
+const isMobile = (/iPhone|iPod|Android/i.test(navigator.userAgent) && !/iPad/i.test(navigator.userAgent)) || 
+                 (window.innerWidth < 768 && /mobile/i.test(navigator.userAgent));
 if (isMobile) {
   // Hide the canvas
   const canvas = document.getElementById('universe-canvas');
@@ -28,17 +28,16 @@ if (isMobile) {
       <line x1="12" y1="8" x2="12" y2="12"></line>
       <line x1="12" y1="16" x2="12.01" y2="16"></line>
     </svg>
-    <h2 style="margin: 0 0 12px 0; font-size: 20px;">Desktop Required</h2>
+    <h2 style="margin: 0 0 12px 0; font-size: 20px;">Phone Not Supported</h2>
     <p style="margin: 0; opacity: 0.9; line-height: 1.5;">
-      This 3D solar system explorer requires a desktop browser for the best experience.
+      This 3D solar system explorer requires a larger screen. Please visit on a tablet, iPad, or desktop.
     </p>
   `;
   document.body.appendChild(mobileMessage);
   
   // Stop execution - don't run any Three.js code
-  throw new Error('Mobile device detected - stopping execution');
+  throw new Error('Phone detected - stopping execution');
 }
-
 import * as THREE from "three";
 import { EffectComposer } from "three/addons/postprocessing/EffectComposer.js";
 import { RenderPass } from "three/addons/postprocessing/RenderPass.js";
