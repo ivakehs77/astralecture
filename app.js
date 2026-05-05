@@ -1,3 +1,44 @@
+// Mobile detection and early exit - MUST BE FIRST
+const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth < 1024;
+
+if (isMobile) {
+  // Hide the canvas
+  const canvas = document.getElementById('universe-canvas');
+  if (canvas) canvas.style.display = 'none';
+  
+  // Create a nice message for mobile users
+  const mobileMessage = document.createElement('div');
+  mobileMessage.style.cssText = `
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    color: white;
+    padding: 40px 30px;
+    border-radius: 12px;
+    text-align: center;
+    max-width: 320px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+    z-index: 10000;
+  `;
+  mobileMessage.innerHTML = `
+    <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-bottom: 20px; opacity: 0.8;">
+      <circle cx="12" cy="12" r="10"></circle>
+      <line x1="12" y1="8" x2="12" y2="12"></line>
+      <line x1="12" y1="16" x2="12.01" y2="16"></line>
+    </svg>
+    <h2 style="margin: 0 0 12px 0; font-size: 20px;">Desktop Required</h2>
+    <p style="margin: 0; opacity: 0.9; line-height: 1.5;">
+      This 3D solar system explorer requires a desktop browser for the best experience.
+    </p>
+  `;
+  document.body.appendChild(mobileMessage);
+  
+  // Stop execution - don't run any Three.js code
+  throw new Error('Mobile device detected - stopping execution');
+}
+
 import * as THREE from "three";
 import { EffectComposer } from "three/addons/postprocessing/EffectComposer.js";
 import { RenderPass } from "three/addons/postprocessing/RenderPass.js";
