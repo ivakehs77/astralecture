@@ -7,6 +7,96 @@
     <link rel="stylesheet" href="./styles.css" />
   </head>
   <body>
+    <!-- ADD THE BANNER HERE -->
+    <div id="mobile-banner" class="mobile-only-banner">
+      <div class="banner-content">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect>
+          <line x1="12" y1="18" x2="12.01" y2="18"></line>
+        </svg>
+        <div class="banner-text">
+          <strong>Best viewed on desktop</strong>
+          <p>This 3D solar system explorer works best on larger screens</p>
+        </div>
+        <button onclick="document.getElementById('mobile-banner').style.display='none'" class="close-btn">✕</button>
+      </div>
+    </div>
+  
+    <style>
+      .mobile-only-banner {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+        color: white;
+        padding: 16px;
+        z-index: 9999;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        animation: slideDown 0.3s ease-out;
+      }
+      
+      .banner-content {
+        max-width: 1200px;
+        margin: 0 auto;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+      
+      .banner-text {
+        flex: 1;
+      }
+      
+      .banner-text strong {
+        display: block;
+        font-size: 16px;
+        margin-bottom: 4px;
+      }
+      
+      .banner-text p {
+        margin: 0;
+        font-size: 14px;
+        opacity: 0.9;
+      }
+      
+      .close-btn {
+        background: rgba(255,255,255,0.1);
+        border: none;
+        color: white;
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        cursor: pointer;
+        font-size: 18px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: background 0.2s;
+      }
+      
+      .close-btn:hover {
+        background: rgba(255,255,255,0.2);
+      }
+      
+      @keyframes slideDown {
+        from {
+          transform: translateY(-100%);
+          opacity: 0;
+        }
+        to {
+          transform: translateY(0);
+          opacity: 1;
+        }
+      }
+      
+      @media (max-width: 1024px) {
+        .mobile-only-banner {
+          display: block;
+        }
+      }
+    </style>
     <canvas id="universe-canvas" aria-label="Interactive universe canvas"></canvas>
 
     <div class="hud">
