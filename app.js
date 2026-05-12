@@ -1,43 +1,3 @@
-// Mobile detection - block phones only, allow tablets/iPads
-const isMobile = (/iPhone|iPod|Android/i.test(navigator.userAgent) && !/iPad/i.test(navigator.userAgent)) || 
-                 (window.innerWidth < 768 && /mobile/i.test(navigator.userAgent));
-if (isMobile) {
-  // Hide the canvas
-  const canvas = document.getElementById('universe-canvas');
-  if (canvas) canvas.style.display = 'none';
-  
-  // Create a nice message for mobile users
-  const mobileMessage = document.createElement('div');
-  mobileMessage.style.cssText = `
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-    color: white;
-    padding: 40px 30px;
-    border-radius: 12px;
-    text-align: center;
-    max-width: 320px;
-    box-shadow: 0 8px 32px rgba(0,0,0,0.4);
-    z-index: 10000;
-  `;
-  mobileMessage.innerHTML = `
-    <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-bottom: 20px; opacity: 0.8;">
-      <circle cx="12" cy="12" r="10"></circle>
-      <line x1="12" y1="8" x2="12" y2="12"></line>
-      <line x1="12" y1="16" x2="12.01" y2="16"></line>
-    </svg>
-    <h2 style="margin: 0 0 12px 0; font-size: 20px;">Phone Not Supported</h2>
-    <p style="margin: 0; opacity: 0.9; line-height: 1.5;">
-      This 3D solar system explorer requires a larger screen. Please visit on a tablet, iPad, or desktop.
-    </p>
-  `;
-  document.body.appendChild(mobileMessage);
-  
-  // Stop execution - don't run any Three.js code
-  throw new Error('Phone detected - stopping execution');
-}
 import * as THREE from "three";
 import { EffectComposer } from "three/addons/postprocessing/EffectComposer.js";
 import { RenderPass } from "three/addons/postprocessing/RenderPass.js";
@@ -124,7 +84,11 @@ const state = {
   introActive: true,
   introElapsed: 0,
   transitionBoost: 0,
+  lastPinchDist: null,
 };
+
+// Tracks all active pointer IDs for multi-touch gesture support
+const activePointers = new Map();
 
 const bodies = {
   sun: {
@@ -2450,6 +2414,7 @@ function pickBody(clientX, clientY) {
 
 function onPointerDown(event) {
   stopIntro();
+  activePointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
   state.dragging = true;
   state.lastX = event.clientX;
   state.lastY = event.clientY;
@@ -2458,6 +2423,25 @@ function onPointerDown(event) {
 }
 
 function onPointerMove(event) {
+  activePointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
+
+  if (activePointers.size >= 2) {
+    // Pinch-to-zoom: measure distance change between two fingers
+    const pts = [...activePointers.values()];
+    const dist = Math.hypot(pts[1].x - pts[0].x, pts[1].y - pts[0].y);
+    if (state.lastPinchDist !== null) {
+      const delta = state.lastPinchDist - dist;
+      state.targetCameraDistance = clamp(
+        state.targetCameraDistance + delta * 0.12,
+        MIN_CAMERA_DISTANCE,
+        MAX_CAMERA_DISTANCE
+      );
+    }
+    state.lastPinchDist = dist;
+    return;
+  }
+
+  state.lastPinchDist = null;
   state.hoveredBody = pickBody(event.clientX, event.clientY);
   if (!state.dragging) return;
   const dx = event.clientX - state.lastX;
@@ -2468,8 +2452,10 @@ function onPointerMove(event) {
   state.lastY = event.clientY;
 }
 
-function onPointerUp() {
-  state.dragging = false;
+function onPointerUp(event) {
+  if (event?.pointerId !== undefined) activePointers.delete(event.pointerId);
+  if (activePointers.size < 2) state.lastPinchDist = null;
+  if (activePointers.size === 0) state.dragging = false;
 }
 
 function onCanvasClick(event) {
@@ -2524,14 +2510,75 @@ function attachUiEvents() {
   canvas.addEventListener("pointermove", onPointerMove);
   canvas.addEventListener("pointerup", onPointerUp);
   canvas.addEventListener("pointercancel", onPointerUp);
-  canvas.addEventListener("pointerleave", () => {
+  canvas.addEventListener("pointerleave", (event) => {
     state.hoveredBody = null;
-    onPointerUp();
+    activePointers.delete(event.pointerId);
+    if (activePointers.size < 2) state.lastPinchDist = null;
+    if (activePointers.size === 0) state.dragging = false;
   });
   canvas.addEventListener("click", onCanvasClick);
   canvas.addEventListener("wheel", onWheel, { passive: false });
   window.addEventListener("keydown", onKeyDown);
   window.addEventListener("resize", resize);
+
+  // FAB panel toggles (tablet/mobile)
+  const hudFab = document.getElementById("hud-fab");
+  const infoFab = document.getElementById("info-fab");
+  const leftRail = document.querySelector(".left-rail");
+  const infoCard = document.querySelector(".info-card");
+
+  const isSmallScreen = window.innerWidth <= 1100;
+
+  // On mobile/tablet: start with panels hidden so the 3D canvas is front and centre
+  if (isSmallScreen && leftRail) {
+    leftRail.classList.add("is-hidden");
+    hudFab?.setAttribute("aria-expanded", "false");
+  }
+  if (isSmallScreen && infoCard) {
+    infoCard.classList.add("is-hidden");
+    infoFab?.setAttribute("aria-expanded", "false");
+  }
+
+  if (hudFab && leftRail) {
+    hudFab.addEventListener("click", () => {
+      const hidden = leftRail.classList.toggle("is-hidden");
+      hudFab.classList.toggle("is-active", !hidden);
+      hudFab.setAttribute("aria-expanded", String(!hidden));
+    });
+  }
+
+  if (infoFab && infoCard) {
+    infoFab.addEventListener("click", () => {
+      const hidden = infoCard.classList.toggle("is-hidden");
+      infoFab.classList.toggle("is-active", !hidden);
+      infoFab.setAttribute("aria-expanded", String(!hidden));
+    });
+  }
+
+  // Swap hint text on touch devices
+  const hintEl = document.getElementById("hint-text");
+  if (hintEl && navigator.maxTouchPoints > 0) {
+    hintEl.innerHTML = "Drag to orbit &middot; Pinch to zoom &middot; Tap planets to inspect them.";
+  }
+
+  // Planet Visits collapse toggle (mobile)
+  const collapseBtn = document.getElementById("control-collapse-btn");
+  const controlBody = document.getElementById("control-body");
+  if (collapseBtn && controlBody) {
+    collapseBtn.addEventListener("click", () => {
+      const open = controlBody.classList.toggle("is-open");
+      collapseBtn.setAttribute("aria-expanded", String(open));
+    });
+  }
+
+  // Brief "tap icons" hint on mobile so users discover the FABs
+  if (isSmallScreen && navigator.maxTouchPoints > 0) {
+    const hint = document.createElement("div");
+    hint.className = "mobile-tap-hint";
+    hint.textContent = "Tap the icons below to open panels";
+    document.body.appendChild(hint);
+    hint.addEventListener("animationend", () => hint.remove());
+  }
 }
 
 window.advanceTime = (ms) => {

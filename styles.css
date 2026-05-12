@@ -52,6 +52,7 @@ body::before {
   width: 100vw;
   height: 100vh;
   display: block;
+  touch-action: none;
 }
 
 .hud {
@@ -71,6 +72,13 @@ body::before {
   gap: 10px;
   align-self: start;
   max-width: 590px;
+  transition: transform 280ms cubic-bezier(0.2, 0.8, 0.2, 1), opacity 280ms ease;
+}
+
+.left-rail.is-hidden {
+  transform: translateX(calc(-100% - 30px));
+  opacity: 0;
+  pointer-events: none;
 }
 
 .left-rail .hero-card {
@@ -135,6 +143,13 @@ body.is-tour-active .info-card {
   background:
     linear-gradient(180deg, rgba(13, 28, 58, 0.66), rgba(6, 17, 38, 0.48)),
     radial-gradient(circle at top center, rgba(136, 214, 255, 0.08), transparent 38%);
+  transition: transform 280ms cubic-bezier(0.2, 0.8, 0.2, 1), opacity 280ms ease;
+}
+
+.info-card.is-hidden {
+  transform: translateX(calc(100% + 30px));
+  opacity: 0;
+  pointer-events: none;
 }
 
 body.is-tour-active .control-card {
@@ -238,10 +253,35 @@ h2 {
 
 .section-heading {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: 8px;
   margin-bottom: 10px;
+}
+
+.collapse-btn {
+  display: none;
+  width: 28px;
+  height: 28px;
+  min-width: 28px;
+  border-radius: 50%;
+  padding: 0;
+  align-items: center;
+  justify-content: center;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+.collapse-btn svg {
+  transition: transform 220ms ease;
+}
+
+.collapse-btn[aria-expanded="true"] svg {
+  transform: rotate(180deg);
+}
+
+.control-body {
+  display: contents;
 }
 
 .section-caption,
@@ -498,96 +538,208 @@ kbd {
   font-size: 0.82rem;
 }
 
+/* Floating action buttons — hidden on desktop, shown on tablet/mobile */
+.panel-fab {
+  display: none;
+  position: fixed;
+  bottom: 22px;
+  z-index: 25;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  padding: 0;
+  align-items: center;
+  justify-content: center;
+  background: rgba(8, 16, 34, 0.9);
+  border: 1px solid rgba(170, 210, 255, 0.25);
+  color: var(--text-main);
+  box-shadow: 0 6px 28px rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(14px);
+  cursor: pointer;
+  transition: background 160ms ease, transform 160ms ease, box-shadow 160ms ease;
+}
+
+.panel-fab:hover {
+  background: rgba(15, 30, 65, 0.96);
+  transform: translateY(-2px);
+  box-shadow: 0 10px 36px rgba(136, 214, 255, 0.15);
+}
+
+.panel-fab.is-active {
+  border-color: rgba(255, 208, 121, 0.5);
+  background: rgba(255, 208, 121, 0.12);
+}
+
+#hud-fab {
+  left: 22px;
+}
+
+#info-fab {
+  right: 22px;
+}
+
+/* ─── Tablet (≤1100px) ──────────────────────────────────────────── */
 @media (max-width: 1100px) {
+  .panel-fab {
+    display: flex;
+  }
+
   .hud {
     grid-template-columns: 1fr;
     align-content: start;
-  }
-
-  .control-card {
-    justify-self: stretch;
-    width: auto;
+    padding: 14px 14px 80px;  /* bottom clearance for FABs */
   }
 
   .left-rail {
     flex-direction: column;
-    max-width: min(100%, 560px);
+    max-width: min(100%, 420px);
+    max-height: calc(100vh - 110px);
+    overflow-y: auto;
+    overflow-x: hidden;
+    scrollbar-width: none;
+  }
+
+  .left-rail::-webkit-scrollbar {
+    display: none;
   }
 
   .left-rail .hero-card,
   .left-rail .control-card {
     flex: 1 1 auto;
+    width: 100%;
   }
 
   .control-card {
+    justify-self: stretch;
     grid-column: auto;
     align-self: start;
-    padding: 20px 22px;
+    width: auto;
+    padding: 12px 13px;
   }
 
-  .hero-card,
-  .control-card,
+  /* Info card: keep fixed, move to bottom-right above FABs */
   .info-card {
-    max-width: min(100%, 560px);
-  }
-
-  .info-card {
-    position: static !important;
     top: auto !important;
-    right: auto !important;
+    bottom: 84px !important;
+    right: 14px !important;
     left: auto !important;
-    bottom: auto !important;
-    width: auto !important;
-    margin: 0 14px 0 14px;
+    width: min(300px, calc(100vw - 28px)) !important;
+    max-height: calc(100vh - 120px);
+    overflow-y: auto;
+    scrollbar-width: none;
+  }
+
+  .info-card::-webkit-scrollbar {
+    display: none;
   }
 
   .tour-panel {
     top: auto;
-    bottom: 18px;
+    bottom: 84px;
     left: 14px;
+    right: 14px;
+    width: auto;
   }
 }
 
-@media (max-width: 720px) {
-  body {
-    overflow: auto;
-  }
-
-  .hud {
-    padding: 14px;
-    gap: 12px;
-  }
-
-  .hero-card,
-  .control-card,
-  .info-card {
-    padding: 16px;
-    border-radius: 20px;
+/* ─── Small tablet / large phone landscape (≤860px) ─────────────── */
+@media (max-width: 860px) {
+  .left-rail {
+    max-width: min(100%, 360px);
   }
 
   h1 {
-    font-size: 2.55rem;
+    font-size: clamp(1.4rem, 4vw, 2rem);
   }
 
-  .hero-status,
+  h2 {
+    font-size: clamp(1.1rem, 3vw, 1.5rem);
+  }
+
+  .destination-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+/* ─── Mobile portrait (≤600px) ───────────────────────────────────── */
+@media (max-width: 600px) {
+  body {
+    overflow: hidden;
+  }
+
+  .hud {
+    padding: 12px 12px 80px;
+    gap: 10px;
+  }
+
+  .left-rail {
+    max-width: 100%;
+    max-height: calc(100vh - 110px);
+  }
+
+  .hero-card,
+  .control-card {
+    padding: 14px;
+    border-radius: 16px;
+  }
+
+  h1 {
+    font-size: clamp(1.3rem, 6vw, 1.8rem);
+  }
+
+  /* Info card becomes a bottom sheet */
+  .info-card {
+    top: auto !important;
+    bottom: 0 !important;
+    right: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    max-width: none !important;
+    max-height: 55vh;
+    border-radius: 20px 20px 0 0 !important;
+    transform: translateY(0) !important;
+    overflow-y: auto;
+    scrollbar-width: none;
+    padding-bottom: 24px;
+  }
+
+  .info-card::-webkit-scrollbar {
+    display: none;
+  }
+
+  .info-card.is-hidden {
+    transform: translateY(calc(100% + 10px)) !important;
+    opacity: 0;
+  }
+
+  #info-fab {
+    bottom: 22px;
+  }
+
+  .hero-status {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .stats-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .destination-grid,
-  .fact-grid,
+  .destination-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .fact-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .tour-facts {
-    grid-template-columns: 1fr;
-  }
-
-  .planet-nav {
-    flex-direction: column;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .tour-panel {
-    left: 14px;
-    right: 14px;
-    bottom: 14px;
+    left: 12px;
+    right: 12px;
+    bottom: 80px;
     width: auto;
     padding: 14px 15px;
     transform: translateY(16px) scale(0.98);
@@ -596,4 +748,83 @@ kbd {
   body.is-tour-active .tour-panel {
     transform: translateY(0) scale(1);
   }
+
+  .media-btn {
+    min-width: 0;
+    flex: 1;
+  }
+
+  /* Collapse button visible on mobile */
+  .collapse-btn {
+    display: flex;
+  }
+
+  /* Planet Visits body collapsed by default on mobile */
+  .control-body {
+    display: grid;
+    grid-template-rows: 0fr;
+    overflow: hidden;
+    transition: grid-template-rows 260ms ease;
+  }
+
+  .control-body > * {
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  .control-body.is-open {
+    grid-template-rows: 1fr;
+  }
+
+  /* Wrap all control-body children in a single element for grid trick */
+  .control-body-inner {
+    overflow: hidden;
+  }
+
+  /* Left rail: compact so canvas stays visible */
+  .left-rail {
+    max-height: 70vh;
+  }
+}
+
+/* ─── Very small (≤380px) ────────────────────────────────────────── */
+@media (max-width: 380px) {
+  .destination-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  h1 {
+    font-size: 1.25rem;
+  }
+
+  .hero-actions {
+    flex-direction: column;
+  }
+}
+
+/* ─── Mobile FAB tap hint ──────────────────────────────────────────── */
+.mobile-tap-hint {
+  position: fixed;
+  bottom: 84px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 24;
+  padding: 8px 18px;
+  border-radius: 999px;
+  background: rgba(8, 16, 34, 0.82);
+  border: 1px solid rgba(170, 210, 255, 0.18);
+  color: var(--text-soft);
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  pointer-events: none;
+  backdrop-filter: blur(10px);
+  white-space: nowrap;
+  animation: fadeHint 3.5s ease forwards;
+}
+
+@keyframes fadeHint {
+  0%   { opacity: 0; transform: translateX(-50%) translateY(6px); }
+  15%  { opacity: 1; transform: translateX(-50%) translateY(0); }
+  70%  { opacity: 1; }
+  100% { opacity: 0; }
 }
