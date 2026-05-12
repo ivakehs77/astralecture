@@ -807,7 +807,19 @@ async function loadTexture(path, options = {}) {
   if (options.colorSpace !== false) {
     texture.colorSpace = THREE.SRGBColorSpace;
   }
-  texture.anisotropy = Math.min(8, runtime.renderer.capabilities.getMaxAnisotropy());
+  if (isMobile) {
+    const img = texture.image;
+    const maxW = 512, maxH = 256;
+    if (img.width > maxW || img.height > maxH) {
+      const cap = document.createElement("canvas");
+      cap.width = maxW;
+      cap.height = maxH;
+      cap.getContext("2d").drawImage(img, 0, 0, maxW, maxH);
+      texture.image = cap;
+    }
+  } else {
+    texture.anisotropy = Math.min(8, runtime.renderer.capabilities.getMaxAnisotropy());
+  }
   texture.needsUpdate = true;
   return texture;
 }
@@ -1960,7 +1972,9 @@ async function create3DScene() {
   runtime.renderer.toneMapping = THREE.ACESFilmicToneMapping;
   runtime.renderer.toneMappingExposure = 1.06;
 
-  runtime.composer = new EffectComposer(runtime.renderer);
+  if (!isMobile) {
+    runtime.composer = new EffectComposer(runtime.renderer);
+  }
 
   runtime.scene = new THREE.Scene();
   runtime.scene.background = new THREE.Color("#01040a");
@@ -1982,8 +1996,8 @@ async function create3DScene() {
   runtime.scene.add(runtime.solarOrbitGroup);
   runtime.solarOrbitGroup.add(runtime.systemGroup);
 
-  runtime.composer.addPass(new RenderPass(runtime.scene, runtime.camera));
   if (!isMobile) {
+    runtime.composer.addPass(new RenderPass(runtime.scene, runtime.camera));
     runtime.composer.addPass(
       new UnrealBloomPass(new THREE.Vector2(state.width, state.height), 0.38, 0.58, 0.94)
     );
@@ -1991,25 +2005,35 @@ async function create3DScene() {
     runtime.composer.addPass(runtime.postPass);
   }
 
-  const ambient = new THREE.AmbientLight(0xc6d9ff, 0.82);
-  runtime.scene.add(ambient);
-  const hemisphere = new THREE.HemisphereLight(0xb6dcff, 0x101827, 0.82);
-  runtime.scene.add(hemisphere);
-  const sunLight = new THREE.PointLight(0xffddb0, 5.7, 1440, 1.45);
-  sunLight.position.set(0, 0, 0);
-  runtime.scene.add(sunLight);
-  const rimLight = new THREE.DirectionalLight(0xb4d0ff, 0.88);
-  rimLight.position.set(120, 50, -180);
-  runtime.scene.add(rimLight);
-  const fillLight = new THREE.DirectionalLight(0xf6d3a2, 0.42);
-  fillLight.position.set(-140, 30, 120);
-  runtime.scene.add(fillLight);
+  if (!isMobile) {
+    const ambient = new THREE.AmbientLight(0xc6d9ff, 0.82);
+    runtime.scene.add(ambient);
+    const hemisphere = new THREE.HemisphereLight(0xb6dcff, 0x101827, 0.82);
+    runtime.scene.add(hemisphere);
+    const sunLight = new THREE.PointLight(0xffddb0, 5.7, 1440, 1.45);
+    sunLight.position.set(0, 0, 0);
+    runtime.scene.add(sunLight);
+    const rimLight = new THREE.DirectionalLight(0xb4d0ff, 0.88);
+    rimLight.position.set(120, 50, -180);
+    runtime.scene.add(rimLight);
+    const fillLight = new THREE.DirectionalLight(0xf6d3a2, 0.42);
+    fillLight.position.set(-140, 30, 120);
+    runtime.scene.add(fillLight);
+  }
 
   const textures = await loadPlanetTextureSet();
 
   destinations.forEach((body, index) => {
     let material;
-    if (body.id === "sun") {
+    if (isMobile && body.id !== "sun") {
+      const mobileTexMap = {
+        mercury: textures.mercury, venus: textures.venusSurface,
+        earth: textures.earthDay, mars: textures.mars,
+        jupiter: textures.jupiter, saturn: textures.saturn,
+        uranus: textures.uranus, neptune: textures.neptune,
+      };
+      material = new THREE.MeshBasicMaterial({ map: mobileTexMap[body.id] ?? null });
+    } else if (body.id === "sun") {
       material = createSunMaterial(THREE);
     } else if (body.id === "mercury") {
       material = new THREE.MeshStandardMaterial({
@@ -2115,7 +2139,7 @@ async function create3DScene() {
 
     if (body.id === "saturn") {
       const ring = new THREE.Mesh(
-        new THREE.RingGeometry(body.radius * 1.45, body.radius * 2.25, 128),
+        new THREE.RingGeometry(body.radius * 1.45, body.radius * 2.25, isMobile ? 32 : 128),
         createSaturnRingMaterial(THREE, textures.saturnRing)
       );
       ring.rotation.x = Math.PI * 0.5;
@@ -2125,7 +2149,8 @@ async function create3DScene() {
     }
 
     const moonPivots = [];
-    const moonDefinitions = moonSystems[body.id] ?? [];
+    const allMoonDefs = moonSystems[body.id] ?? [];
+    const moonDefinitions = isMobile ? allMoonDefs.slice(0, 4) : allMoonDefs;
     if (moonDefinitions.length > 0) {
       const moonRig = new THREE.Group();
       moonRig.position.x = body.orbitRadius;
@@ -2139,13 +2164,16 @@ async function create3DScene() {
         moonPivot.userData.orbitSpeed = moon.speed;
         moonPivot.userData.orbitPhase = moonIndex * 0.37;
 
+        const moonMaterial = isMobile
+          ? new THREE.MeshBasicMaterial({ color: moon.color })
+          : new THREE.MeshStandardMaterial({
+              map: createMoonTexture(THREE, moon.color, moon.accent),
+              roughness: 0.96,
+              metalness: 0.01,
+            });
         const moonMesh = new THREE.Mesh(
-          new THREE.SphereGeometry(moon.radius, 14, 14),
-          new THREE.MeshStandardMaterial({
-            map: createMoonTexture(THREE, moon.color, moon.accent),
-            roughness: 0.96,
-            metalness: 0.01,
-          })
+          new THREE.SphereGeometry(moon.radius, isMobile ? 8 : 14, isMobile ? 8 : 14),
+          moonMaterial
         );
         moonMesh.position.x = moon.distance;
         moonMesh.userData.rotationSpeed = moon.speed * 0.16;
@@ -2156,9 +2184,9 @@ async function create3DScene() {
       });
     }
 
-    if (body.id === "earth") {
+    if (body.id === "earth" && !isMobile) {
       const clouds = new THREE.Mesh(
-        new THREE.SphereGeometry(body.radius * 1.02, isMobile ? 32 : 64, isMobile ? 32 : 64),
+        new THREE.SphereGeometry(body.radius * 1.02, 64, 64),
         createEarthCloudMaterial(THREE, textures.earthClouds)
       );
       clouds.userData.rotationSpeed = 0.12;
@@ -2207,7 +2235,7 @@ function resize() {
   runtime.camera.updateProjectionMatrix();
   runtime.renderer.setPixelRatio(isMobile ? 1 : Math.min(window.devicePixelRatio || 1, 2));
   runtime.renderer.setSize(state.width, state.height);
-  runtime.composer.setSize(state.width, state.height);
+  runtime.composer?.setSize(state.width, state.height);
   runtime.postPass?.uniforms.resolution.value.set(state.width, state.height);
 }
 
