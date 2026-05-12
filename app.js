@@ -1608,20 +1608,20 @@ async function loadPlanetTextureSet() {
     earthNormal,
     earthSpecular,
     mercury,
-    mercuryMaps: buildTextureVariants(THREE, mercury, { normalStrength: 3.8, roughnessBias: 0.82, specularBias: 0.08, specularBoost: 0.18 }),
+    mercuryMaps: isMobile ? null : buildTextureVariants(THREE, mercury, { normalStrength: 3.8, roughnessBias: 0.82, specularBias: 0.08, specularBoost: 0.18 }),
     venusSurface,
-    venusMaps: buildTextureVariants(THREE, venusSurface, { normalStrength: 1.4, roughnessBias: 0.9, roughnessContrast: 0.22, specularBias: 0.06, specularBoost: 0.12 }),
+    venusMaps: isMobile ? null : buildTextureVariants(THREE, venusSurface, { normalStrength: 1.4, roughnessBias: 0.9, roughnessContrast: 0.22, specularBias: 0.06, specularBoost: 0.12 }),
     mars,
-    marsMaps: buildTextureVariants(THREE, mars, { normalStrength: 2.4, roughnessBias: 0.78, roughnessContrast: 0.36, specularBias: 0.05, specularBoost: 0.1 }),
+    marsMaps: isMobile ? null : buildTextureVariants(THREE, mars, { normalStrength: 2.4, roughnessBias: 0.78, roughnessContrast: 0.36, specularBias: 0.05, specularBoost: 0.1 }),
     jupiter,
-    jupiterMaps: buildTextureVariants(THREE, jupiter, { normalStrength: 0.8, roughnessBias: 0.58, roughnessContrast: 0.18, specularBias: 0.12, specularBoost: 0.22 }),
+    jupiterMaps: isMobile ? null : buildTextureVariants(THREE, jupiter, { normalStrength: 0.8, roughnessBias: 0.58, roughnessContrast: 0.18, specularBias: 0.12, specularBoost: 0.22 }),
     saturn,
-    saturnMaps: buildTextureVariants(THREE, saturn, { normalStrength: 0.7, roughnessBias: 0.6, roughnessContrast: 0.16, specularBias: 0.1, specularBoost: 0.18 }),
+    saturnMaps: isMobile ? null : buildTextureVariants(THREE, saturn, { normalStrength: 0.7, roughnessBias: 0.6, roughnessContrast: 0.16, specularBias: 0.1, specularBoost: 0.18 }),
     saturnRing,
     uranus,
-    uranusMaps: buildTextureVariants(THREE, uranus, { normalStrength: 0.45, roughnessBias: 0.52, roughnessContrast: 0.12, specularBias: 0.15, specularBoost: 0.18 }),
+    uranusMaps: isMobile ? null : buildTextureVariants(THREE, uranus, { normalStrength: 0.45, roughnessBias: 0.52, roughnessContrast: 0.12, specularBias: 0.15, specularBoost: 0.18 }),
     neptune,
-    neptuneMaps: buildTextureVariants(THREE, neptune, { normalStrength: 0.6, roughnessBias: 0.5, roughnessContrast: 0.14, specularBias: 0.16, specularBoost: 0.2 }),
+    neptuneMaps: isMobile ? null : buildTextureVariants(THREE, neptune, { normalStrength: 0.6, roughnessBias: 0.5, roughnessContrast: 0.14, specularBias: 0.16, specularBoost: 0.2 }),
   };
 }
 
@@ -2012,9 +2012,9 @@ async function create3DScene() {
     } else if (body.id === "mercury") {
       material = new THREE.MeshStandardMaterial({
         map: textures.mercury,
-        normalMap: textures.mercuryMaps.normalMap,
+        normalMap: textures.mercuryMaps?.normalMap ?? null,
         normalScale: new THREE.Vector2(0.7, 0.7),
-        roughnessMap: textures.mercuryMaps.roughnessMap,
+        roughnessMap: textures.mercuryMaps?.roughnessMap ?? null,
         roughness: 0.96,
         metalness: 0.02,
         color: new THREE.Color("#c8beb2"),
@@ -2022,9 +2022,9 @@ async function create3DScene() {
     } else if (body.id === "venus") {
       material = new THREE.MeshStandardMaterial({
         map: textures.venusSurface,
-        normalMap: textures.venusMaps.normalMap,
+        normalMap: textures.venusMaps?.normalMap ?? null,
         normalScale: new THREE.Vector2(0.18, 0.18),
-        roughnessMap: textures.venusMaps.roughnessMap,
+        roughnessMap: textures.venusMaps?.roughnessMap ?? null,
         roughness: 0.88,
         metalness: 0.0,
         color: new THREE.Color("#f0ddbc"),
@@ -2041,9 +2041,9 @@ async function create3DScene() {
     } else if (body.id === "mars") {
       material = new THREE.MeshStandardMaterial({
         map: textures.mars,
-        normalMap: textures.marsMaps.normalMap,
+        normalMap: textures.marsMaps?.normalMap ?? null,
         normalScale: new THREE.Vector2(0.36, 0.36),
-        roughnessMap: textures.marsMaps.roughnessMap,
+        roughnessMap: textures.marsMaps?.roughnessMap ?? null,
         roughness: 0.94,
         metalness: 0.02,
         color: new THREE.Color("#e4a285"),
@@ -2051,9 +2051,9 @@ async function create3DScene() {
     } else if (body.id === "jupiter") {
       material = new THREE.MeshStandardMaterial({
         map: textures.jupiter,
-        normalMap: textures.jupiterMaps.normalMap,
+        normalMap: textures.jupiterMaps?.normalMap ?? null,
         normalScale: new THREE.Vector2(0.08, 0.08),
-        roughnessMap: textures.jupiterMaps.roughnessMap,
+        roughnessMap: textures.jupiterMaps?.roughnessMap ?? null,
         roughness: 0.8,
         metalness: 0.01,
         color: new THREE.Color("#eed8b5"),
@@ -2061,9 +2061,9 @@ async function create3DScene() {
     } else if (body.id === "saturn") {
       material = new THREE.MeshStandardMaterial({
         map: textures.saturn,
-        normalMap: textures.saturnMaps.normalMap,
+        normalMap: textures.saturnMaps?.normalMap ?? null,
         normalScale: new THREE.Vector2(0.07, 0.07),
-        roughnessMap: textures.saturnMaps.roughnessMap,
+        roughnessMap: textures.saturnMaps?.roughnessMap ?? null,
         roughness: 0.83,
         metalness: 0.01,
         color: new THREE.Color("#f2e6c8"),
@@ -2071,9 +2071,9 @@ async function create3DScene() {
     } else if (body.id === "uranus") {
       material = new THREE.MeshStandardMaterial({
         map: textures.uranus,
-        normalMap: textures.uranusMaps.normalMap,
+        normalMap: textures.uranusMaps?.normalMap ?? null,
         normalScale: new THREE.Vector2(0.05, 0.05),
-        roughnessMap: textures.uranusMaps.roughnessMap,
+        roughnessMap: textures.uranusMaps?.roughnessMap ?? null,
         roughness: 0.68,
         metalness: 0.01,
         color: new THREE.Color("#d3f0f4"),
@@ -2081,9 +2081,9 @@ async function create3DScene() {
     } else if (body.id === "neptune") {
       material = new THREE.MeshStandardMaterial({
         map: textures.neptune,
-        normalMap: textures.neptuneMaps.normalMap,
+        normalMap: textures.neptuneMaps?.normalMap ?? null,
         normalScale: new THREE.Vector2(0.06, 0.06),
-        roughnessMap: textures.neptuneMaps.roughnessMap,
+        roughnessMap: textures.neptuneMaps?.roughnessMap ?? null,
         roughness: 0.66,
         metalness: 0.01,
         color: new THREE.Color("#8eb3ff"),
