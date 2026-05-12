@@ -1101,7 +1101,7 @@ function createRingTexture(THREE) {
 
 function createAtmosphereShell(body, color, opacity, scale = 1.08) {
   return new THREE.Mesh(
-    new THREE.SphereGeometry(body.radius * scale, 64, 64),
+    new THREE.SphereGeometry(body.radius * scale, isMobile ? 32 : 64, isMobile ? 32 : 64),
     new THREE.MeshBasicMaterial({
       color: new THREE.Color(color),
       transparent: true,
@@ -1638,9 +1638,9 @@ function createStarfield(THREE) {
     ctx.fillRect(0, 0, width, height);
   });
   const layers = [
-    { count: 4400, spread: [1900, 1150, 1900], size: 1.9, opacity: 1, color: 0xffffff, speed: 0.032 },
-    { count: 1800, spread: [1450, 900, 1450], size: 2.7, opacity: 0.48, color: 0xd8e7ff, speed: -0.02 },
-    { count: 900, spread: [1100, 760, 1100], size: 3.7, opacity: 0.24, color: 0xffebc8, speed: 0.012 },
+    { count: isMobile ? 1500 : 4400, spread: [1900, 1150, 1900], size: 1.9, opacity: 1, color: 0xffffff, speed: 0.032 },
+    { count: isMobile ? 600 : 1800, spread: [1450, 900, 1450], size: 2.7, opacity: 0.48, color: 0xd8e7ff, speed: -0.02 },
+    { count: isMobile ? 300 : 900, spread: [1100, 760, 1100], size: 3.7, opacity: 0.24, color: 0xffebc8, speed: 0.012 },
   ];
 
   layers.forEach((layer, index) => {
@@ -1972,11 +1972,13 @@ async function create3DScene() {
   runtime.cameraLookAt = new THREE.Vector3();
   runtime.solarOrbitGroup = new THREE.Group();
   runtime.systemGroup = new THREE.Group();
-  runtime.galaxyGroup = createGalaxyBackdrop(THREE);
   runtime.textureLoader = new THREE.TextureLoader();
   runtime.starfield = createStarfield(THREE);
   runtime.scene.add(runtime.starfield);
-  runtime.scene.add(runtime.galaxyGroup);
+  if (!isMobile) {
+    runtime.galaxyGroup = createGalaxyBackdrop(THREE);
+    runtime.scene.add(runtime.galaxyGroup);
+  }
   runtime.scene.add(runtime.solarOrbitGroup);
   runtime.solarOrbitGroup.add(runtime.systemGroup);
 
@@ -2099,7 +2101,7 @@ async function create3DScene() {
       });
     }
 
-    const mesh = new THREE.Mesh(new THREE.SphereGeometry(body.radius, 64, 64), material);
+    const mesh = new THREE.Mesh(new THREE.SphereGeometry(body.radius, isMobile ? 32 : 64, isMobile ? 32 : 64), material);
     mesh.userData.bodyId = body.id;
     mesh.userData.rotationSpeed = axialRotationRates[body.id] ?? 0.12;
     mesh.userData.orbitPhase = index * 0.36;
@@ -2156,7 +2158,7 @@ async function create3DScene() {
 
     if (body.id === "earth") {
       const clouds = new THREE.Mesh(
-        new THREE.SphereGeometry(body.radius * 1.02, 64, 64),
+        new THREE.SphereGeometry(body.radius * 1.02, isMobile ? 32 : 64, isMobile ? 32 : 64),
         createEarthCloudMaterial(THREE, textures.earthClouds)
       );
       clouds.userData.rotationSpeed = 0.12;
@@ -2282,7 +2284,7 @@ function animateScene(dt) {
   const expansionFactor = 1 + Math.pow(state.time, 2.2) * 0.3;
   const orbitalTimeFactor = 0.18 + Math.pow(state.time, 1.7) * 2.8;
   systemGroup.scale.setScalar(expansionFactor);
-  galaxyGroup.rotation.z = state.time * 0.12;
+  if (galaxyGroup) galaxyGroup.rotation.z = state.time * 0.12;
   updateGalaxyBackdropVisibility();
   if (starfield) {
     starfield.children.forEach((layer, index) => {
@@ -2398,7 +2400,11 @@ function animateScene(dt) {
   updateBodyScreenPositions();
   showTooltip();
   syncUi();
-  runtime.composer.render();
+  if (isMobile) {
+    runtime.renderer.render(runtime.scene, runtime.camera);
+  } else {
+    runtime.composer.render();
+  }
 }
 
 function pickBody(clientX, clientY) {
