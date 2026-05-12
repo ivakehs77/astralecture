@@ -5,6 +5,7 @@ import { ShaderPass } from "three/addons/postprocessing/ShaderPass.js";
 import { UnrealBloomPass } from "three/addons/postprocessing/UnrealBloomPass.js";
 
 const canvas = document.getElementById("universe-canvas");
+const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || navigator.maxTouchPoints > 1;
 
 const zoomSlider = document.getElementById("zoom-slider");
 const timeSlider = document.getElementById("time-slider");
@@ -1949,11 +1950,11 @@ function updateGalaxyBackdropVisibility() {
 async function create3DScene() {
   runtime.renderer = new THREE.WebGLRenderer({
     canvas,
-    antialias: true,
+    antialias: !isMobile,
     alpha: true,
     powerPreference: "high-performance",
   });
-  runtime.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+  runtime.renderer.setPixelRatio(isMobile ? 1 : Math.min(window.devicePixelRatio || 1, 2));
   runtime.renderer.setSize(state.width, state.height);
   runtime.renderer.outputColorSpace = THREE.SRGBColorSpace;
   runtime.renderer.toneMapping = THREE.ACESFilmicToneMapping;
@@ -1980,11 +1981,13 @@ async function create3DScene() {
   runtime.solarOrbitGroup.add(runtime.systemGroup);
 
   runtime.composer.addPass(new RenderPass(runtime.scene, runtime.camera));
-  runtime.composer.addPass(
-    new UnrealBloomPass(new THREE.Vector2(state.width, state.height), 0.38, 0.58, 0.94)
-  );
-  runtime.postPass = createCinematicGradePass(THREE);
-  runtime.composer.addPass(runtime.postPass);
+  if (!isMobile) {
+    runtime.composer.addPass(
+      new UnrealBloomPass(new THREE.Vector2(state.width, state.height), 0.38, 0.58, 0.94)
+    );
+    runtime.postPass = createCinematicGradePass(THREE);
+    runtime.composer.addPass(runtime.postPass);
+  }
 
   const ambient = new THREE.AmbientLight(0xc6d9ff, 0.82);
   runtime.scene.add(ambient);
@@ -2200,7 +2203,7 @@ function resize() {
   if (!runtime.ready) return;
   runtime.camera.aspect = state.width / state.height;
   runtime.camera.updateProjectionMatrix();
-  runtime.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+  runtime.renderer.setPixelRatio(isMobile ? 1 : Math.min(window.devicePixelRatio || 1, 2));
   runtime.renderer.setSize(state.width, state.height);
   runtime.composer.setSize(state.width, state.height);
   runtime.postPass?.uniforms.resolution.value.set(state.width, state.height);
